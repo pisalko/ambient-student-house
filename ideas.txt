@@ -1,0 +1,18 @@
+WFA on receipt (user enters data (name and other shit) and a password is generated for him)
+
+//Infrared remote controls for the different users, buttons do different shit (grand access, open fridge, open guza mi)
+
+Each user is generated a password (and uses the IR remote to enter his password to the different facilitties he wants to use)
+
+smoke detector (IR Receiver and IR transmitter in close proximity (if beam is interrupted, do alarm))
+
+Air humidity - DHT11 and Fan 
+
+
+
+
+Fingerprint sensor/ RFID chips and reader (depends on ISSD availability) for login and ID of users
+
+Different sensors in the different rooms (Network created with one or more ESP modules)
+
+One or more arduino + one or more ESP modules.
