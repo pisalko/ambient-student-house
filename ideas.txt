@@ -16,3 +16,9 @@ Fingerprint sensor/ RFID chips and reader (depends on ISSD availability) for log
 Different sensors in the different rooms (Network created with one or more ESP modules)
 
 One or more arduino + one or more ESP modules.
+
+
+Motion Sensor
+IR RECEIVER & IR BEAM Transmitter // Also IR Remote controls (For control of modes and actiavte/deactivate stuff)
+Gas detection sensor
+
