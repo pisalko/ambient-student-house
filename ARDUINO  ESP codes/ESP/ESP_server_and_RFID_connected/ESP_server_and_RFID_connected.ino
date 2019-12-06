@@ -7,17 +7,20 @@
 #include <ESP8266WiFi.h>
 #include <SPI.h>
 #include <MFRC522.h>
+#include <SoftwareSerial.h>
 
 //rfid code
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
+
+SoftwareSerial s(D1, D2);
 
 String oldContent = "";
 bool once = true;
 bool once2 = true;
 //end of rfid code
 
-String ssid = "Az";
-String pass = "gonoreq5";
+String ssid = "WiFi 5-506";
+String pass = "VkvBK3Xr";
 
 char** data;
 
@@ -28,8 +31,18 @@ WiFiServer server(80);
 
 HTTPClient http;
 
+unsigned long timestamp;
+
+const int REQUEST_PIN = D0;
+bool lock = false;
+
+const int G_LED = D8;
+
 void setup() {
   Serial.begin(9600);
+
+  s.begin(9600);
+  while(!s);
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, pass);
@@ -37,16 +50,19 @@ void setup() {
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.println(".");
-
-    //rfid code
-    SPI.begin();      // Initiate  SPI bus
-    mfrc522.PCD_Init();   // Initiate MFRC522
-    //end of rfid code
   }
+
+  //rfid code
+  SPI.begin();      // Initiate  SPI bus
+  mfrc522.PCD_Init();   // Initiate MFRC522
+  //end of rfid code
 
   Serial.println(WiFi.localIP());
 
   data = (char **)malloc(sizeof(char[12]) * cap);
+  pinMode(REQUEST_PIN, INPUT);
+
+  pinMode(G_LED, OUTPUT);
 }
 
 void RFIDdetected() {
@@ -60,6 +76,11 @@ void RFIDdetected() {
   if ( ! mfrc522.PICC_ReadCardSerial())
   {
     return;
+  }
+
+
+  if(millis() - timestamp > 5000){
+    oldContent = "";
   }
 
 
@@ -84,6 +105,28 @@ void RFIDdetected() {
   {
     Serial.flush();
     Serial.println(content);
+
+    // CARD CHECK HERE
+
+    bool found = false;
+    char dataArr[content.length()];
+    content.toCharArray(dataArr, content.length()+1);
+    for(int i=0; i<size; i++){
+      Serial.println(data[i]);
+      if(strcmp(dataArr, data[i]) == 0){
+        found = true;
+        break;
+      }
+    }
+
+    if(found){
+      digitalWrite(G_LED, HIGH);
+      delay(2000);
+      digitalWrite(G_LED, LOW);
+    }
+
+    timestamp = millis();
+    
     oldContent = content;
     once = false;
   }
@@ -199,6 +242,26 @@ void loop() {
     client.stop();
   }
   RFIDdetected();
+
+  if(digitalRead(REQUEST_PIN) == HIGH){
+    if(!lock){
+      lock = true;
+      http.begin("http://api.openweathermap.org/data/2.5/weather?q=Eindhoven%2Cnl&APPID=effcaf77df40f6a9c26a2c67d698e1e4");
+      int httpCode = http.GET();
+
+      String response = http.getString();
+
+      int startIndex = response.indexOf("main") + 7;
+      int endIndex = response.indexOf("description") - 3;
+
+      String weather = response.substring(startIndex, endIndex);
+
+      for(int i=0; i<weather.length(); i++)s.write(weather[i]);
+      //Serial.println(weather);
+    }
+  }else{
+    lock = false;
+  }
 }
 
 
