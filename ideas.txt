@@ -1,4 +1,4 @@
-WFA on receipt (user enters data (name and other shit) and a password is generated for him)
+WFA on reception (user enters data (name and other shit) and a password is generated for him)
 
 //Infrared remote controls for the different users, buttons do different shit (grand access, open fridge, open guza mi)
 
