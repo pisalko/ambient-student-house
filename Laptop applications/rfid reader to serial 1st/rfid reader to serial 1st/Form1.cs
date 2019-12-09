@@ -114,7 +114,7 @@ namespace rfid_reader_to_serial_1st
                         //MessageBox.Show("*" + textInPort + "*");
                                                                     //depending on which room is selected, send to different ESPs
                         
-                        POSTrequest("http://192.168.43.114/add", textInPort);                      
+                        POSTrequest("http://192.168.43.98/add", textInPort);                      
                         dataSendToServer = "";
                         textInPort = "";
                     }
@@ -126,7 +126,7 @@ namespace rfid_reader_to_serial_1st
 
                                                                     //depending on which room is selected, send to different ESPs
 
-                        POSTrequest("http://192.168.43.114/add", textInPort); //ESP 1                       
+                        POSTrequest("http://192.168.43.98/add", textInPort); //ESP 1                       
                         dataSendToServer = "";
                         textInPort = "";
                     }

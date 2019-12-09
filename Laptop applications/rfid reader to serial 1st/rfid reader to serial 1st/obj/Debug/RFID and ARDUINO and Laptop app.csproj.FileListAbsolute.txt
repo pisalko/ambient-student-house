@@ -1,0 +1,9 @@
+C:\Users\Valio\Desktop\ASH PCT01 2\pct01-group-2\Laptop applications\rfid reader to serial 1st\rfid reader to serial 1st\bin\Debug\rfid reader to serial 1st.exe.config
+C:\Users\Valio\Desktop\ASH PCT01 2\pct01-group-2\Laptop applications\rfid reader to serial 1st\rfid reader to serial 1st\bin\Debug\rfid reader to serial 1st.exe
+C:\Users\Valio\Desktop\ASH PCT01 2\pct01-group-2\Laptop applications\rfid reader to serial 1st\rfid reader to serial 1st\bin\Debug\rfid reader to serial 1st.pdb
+C:\Users\Valio\Desktop\ASH PCT01 2\pct01-group-2\Laptop applications\rfid reader to serial 1st\rfid reader to serial 1st\obj\Debug\RFID and ARDUINO and Laptop app.csprojAssemblyReference.cache
+C:\Users\Valio\Desktop\ASH PCT01 2\pct01-group-2\Laptop applications\rfid reader to serial 1st\rfid reader to serial 1st\obj\Debug\rfid_reader_to_serial_1st.Form1.resources
+C:\Users\Valio\Desktop\ASH PCT01 2\pct01-group-2\Laptop applications\rfid reader to serial 1st\rfid reader to serial 1st\obj\Debug\rfid_reader_to_serial_1st.Properties.Resources.resources
+C:\Users\Valio\Desktop\ASH PCT01 2\pct01-group-2\Laptop applications\rfid reader to serial 1st\rfid reader to serial 1st\obj\Debug\RFID and ARDUINO and Laptop app.csproj.GenerateResource.cache
+C:\Users\Valio\Desktop\ASH PCT01 2\pct01-group-2\Laptop applications\rfid reader to serial 1st\rfid reader to serial 1st\obj\Debug\rfid reader to serial 1st.exe
+C:\Users\Valio\Desktop\ASH PCT01 2\pct01-group-2\Laptop applications\rfid reader to serial 1st\rfid reader to serial 1st\obj\Debug\rfid reader to serial 1st.pdb
