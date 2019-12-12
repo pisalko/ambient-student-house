@@ -4,6 +4,13 @@
 #include "Adafruit_BluefruitLE_UART.h"
 #include "BluefruitConfig.h"
 
+#include <SoftwareSerial.h>
+
+bool once = true;
+String data = "";
+
+SoftwareSerial s(13, 12);
+
 /* ...hardware SPI, using SCK/MOSI/MISO hardware SPI pins and then user selected CS/IRQ/RST */
 Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_CS, BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
 
@@ -17,6 +24,9 @@ void setup(void)
 {
   Serial.begin(9600);
 
+  s.begin(9600);
+  while (!s);
+
   if ( !ble.begin(VERBOSE_MODE) )
   {
     error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
@@ -28,9 +38,9 @@ void setup(void)
 
   /* Wait for connection */
   while (! ble.isConnected()) {
-      delay(200);
+    delay(200);
   }
-  Serial.println("vale");
+  Serial.println("Connection Established.");
 }
 
 /**************************************************************************/
@@ -40,35 +50,56 @@ void setup(void)
 /**************************************************************************/
 void loop(void)
 {
-  // Check for user input
-  char inputs[BUFSIZE+1];
 
-  if ( getUserInput(inputs, BUFSIZE) )
+
+
+  if (ble.isConnected())
   {
-    // Send characters to Bluefruit
-    Serial.print("[Send] ");
-    Serial.println(inputs);
+    
+    if (s.available()) {
+      Serial.println("tuka vliza brat");
+      data = s.readString();
+      once = true;
+      // Send characters to Bluefruit
+      Serial.print("[Send] ");
+      Serial.println(data);
 
-    ble.print("AT+BLEUARTTX=");
-    ble.println(inputs);
+      ble.print("AT+BLEUARTTX=");
+      ble.println(data);
 
-    // check response stastus
-    if (! ble.waitForOK() ) {
-      Serial.println(F("Failed to send?"));
+      // check response stastus
+      if (! ble.waitForOK() ) {
+        Serial.println(F("Failed to send?"));
+      }
+    }
+
+
+    // Check for incoming characters from Bluefruit
+    ble.println("AT+BLEUARTRX");
+    ble.readline();
+    if (strcmp(ble.buffer, "OK") == 0) {
+      // no data
+      return;
+    }
+    // Some data was found, its in the buffer
+    Serial.print(F("[Recv] "));
+    Serial.println(ble.buffer);
+
+    // TRANSFER UART HERE
+
+    String data = ble.buffer;
+    for (int i = 0; i < data.length(); i++)s.write(data[i]);
+
+    ble.waitForOK();
+  }
+  else
+  {
+    if (once)
+    {
+      Serial.println("Disconnected from device");
+      once = false;
     }
   }
-
-  // Check for incoming characters from Bluefruit
-  ble.println("AT+BLEUARTRX");
-  ble.readline();
-  if (strcmp(ble.buffer, "OK") == 0) {
-    // no data
-    return;
-  }
-  // Some data was found, its in the buffer
-  Serial.print(F("[Recv] ")); 
-  Serial.println(ble.buffer);
-  ble.waitForOK();
 }
 
 /**************************************************************************/
@@ -82,17 +113,19 @@ bool getUserInput(char buffer[], uint8_t maxSize)
   TimeoutTimer timeout(100);
 
   memset(buffer, 0, maxSize);
-  while( (!Serial.available()) && !timeout.expired() ) { delay(1); }
+  while ( (!Serial.available()) && !timeout.expired() ) {
+    delay(1);
+  }
 
   if ( timeout.expired() ) return false;
 
   delay(2);
-  uint8_t count=0;
+  uint8_t count = 0;
   do
   {
-    count += Serial.readBytes(buffer+count, maxSize);
+    count += Serial.readBytes(buffer + count, maxSize);
     delay(2);
-  } while( (count < maxSize) && (Serial.available()) );
+  } while ( (count < maxSize) && (Serial.available()) );
 
   return true;
 }

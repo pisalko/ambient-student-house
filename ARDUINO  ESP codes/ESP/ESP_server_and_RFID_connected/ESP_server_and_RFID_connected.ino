@@ -45,12 +45,7 @@ void setup() {
   while(!s);
 
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, pass);
-  server.begin();
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.println(".");
-  }
+  server.begin(); 
 
   //rfid code
   SPI.begin();      // Initiate  SPI bus
@@ -167,6 +162,45 @@ void add(String cardGiven) {
 String headerS;
 
 void loop() {
+  if(s.available()){
+    String data = s.readString();
+
+    if(data[0] == '~'){
+      String ssidNew = "";
+      for(int i=0; i<data.length(); i++){
+        if(data[i] != '~' && data[0] != ';'){
+          ssidNew += data[i];
+        }
+      }
+      ssid = ssidNew;
+      Serial.println("SSID>" + ssid);
+      //WiFi.begin(ssid, pass);
+    }else if(data[0] == ';'){
+      String passNew = "";
+      for(int i=0; i<data.length(); i++){
+        if(data[i] != '~' && data[i] != ';'){
+          passNew += data[i];
+        }
+      }
+      pass = passNew;
+      Serial.println("PASS>" + pass);
+    }else if(data[0] == '|'){
+      WiFi.begin(ssid, pass);
+      
+      while(WiFi.status() == WL_DISCONNECTED){
+        Serial.println(".");
+      }
+      String ipESP = WiFi.localIP().toString();
+      Serial.println(ipESP);
+
+      for(int i=0; i<ipESP.length(); i++){
+        s.write(ipESP[i]);
+      }
+    }
+    Serial.println(data);
+  }
+
+  
   WiFiClient client = server.available();   // Listen for incoming clients
 
   if (client) {                             // If a new client connects,
@@ -182,7 +216,6 @@ void loop() {
           if (currentLine.length() == 0) {
             client.println("HTTP/1.1 200 OK");
             client.println("Content-type: text/plain");
-
 
             if (headerS.indexOf("GET /test") >= 0) {
               client.println("Content-Length: 3");
@@ -257,7 +290,7 @@ void loop() {
       String weather = response.substring(startIndex, endIndex);
 
       for(int i=0; i<weather.length(); i++)s.write(weather[i]);
-      //Serial.println(weather);
+      Serial.println(weather);
     }
   }else{
     lock = false;
