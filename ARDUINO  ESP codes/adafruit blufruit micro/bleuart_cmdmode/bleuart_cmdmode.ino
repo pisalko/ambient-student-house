@@ -6,6 +6,9 @@
 
 #include <SoftwareSerial.h>
 
+    #define FACTORYRESET_ENABLE         1
+
+
 bool once = true;
 String data = "";
 
@@ -23,6 +26,7 @@ void error(const __FlashStringHelper*err) {
 void setup(void)
 {
   Serial.begin(9600);
+  Serial.println("here");
 
   s.begin(9600);
   while (!s);
@@ -30,6 +34,15 @@ void setup(void)
   if ( !ble.begin(VERBOSE_MODE) )
   {
     error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
+  }
+
+  if ( FACTORYRESET_ENABLE )
+  {
+    /* Perform a factory reset to make sure everything is in a known state */
+    Serial.println(F("Performing a factory reset: "));
+    if ( ! ble.factoryReset() ){
+      error(F("Couldn't factory reset"));
+    }
   }
 
   /* Disable command echo from Bluefruit */
