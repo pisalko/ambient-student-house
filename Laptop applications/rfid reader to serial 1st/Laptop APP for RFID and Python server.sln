@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.29424.173
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RFID and ARDUINO and Laptop app", "rfid reader to serial 1st\RFID and ARDUINO and Laptop app.csproj", "{4709EC54-2F67-4E8E-9090-925852110A57}"
 EndProject
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Python server WORKING POST GET", "..\..\..\..\..\OLD githubs\IP GIT\IP-V-I-E\Java server VS attempt 1\Java server attempt 1\Python server WORKING POST GET\Python server WORKING POST GET.pyproj", "{FF5AFDCF-21BB-44C6-97A9-C3223F70FEFD}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "Python server WORKING POST GET", "..\Python server WORKING POST GET\Python server WORKING POST GET.pyproj", "{FF5AFDCF-21BB-44C6-97A9-C3223F70FEFD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -18,6 +18,7 @@ namespace rfid_reader_to_serial_1st
         String textInPort = "";
         String dataSendToServer = "";
         String responseFromServer = "";
+        String dataFromGET = "";
         public Form1()
         {
             try
@@ -28,6 +29,26 @@ namespace rfid_reader_to_serial_1st
             catch (Exception errors)
             {
                 MessageBox.Show("Arduino not connected to the port");
+            }
+        }
+
+        public string GETrequest(string uri)
+        {
+            try
+            {
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+                request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+
+                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+                Stream stream = response.GetResponseStream();
+                StreamReader reader = new StreamReader(stream);
+
+                return reader.ReadToEnd();
+            }
+            catch (Exception errors)
+            {
+                MessageBox.Show("There is a problem with the server, please check connection !");
+                return null;
             }
         }
 
@@ -98,6 +119,9 @@ namespace rfid_reader_to_serial_1st
         private void timer1_Tick(object sender, EventArgs e)
         {
             lbUID.Text = "Current chip ID: " + textInPort;
+            dataFromGET = GETrequest("http://192.168.43.213:42069/");
+            dataFromGET 
+            //lbUID.Text = dataFromGET;
         }
 
         private void btnRegister_Click(object sender, EventArgs e)

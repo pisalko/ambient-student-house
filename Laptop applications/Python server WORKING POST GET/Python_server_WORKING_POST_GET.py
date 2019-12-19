@@ -11,28 +11,18 @@ Send a HEAD request:
 Send a POST request:
     curl -d "foo=bar&bin=baz" http://localhost:8000
 """
-from flask import Flask, render_template, request
-import requests
 
 import socket
 import argparse
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-app = Flask(__name__)
 
 class S(BaseHTTPRequestHandler):
 
     post_data = "" 
     message = ""
 
-    
-    def temperature():
-        zipcode = request.form['zip']
-        r = requests.get('http://api.openweathermap.org/data/2.5/weather?zip='+zipcode+',us&appid=fd38d62aa4fe1a03d86eee91fcd69f6e')
-        json_object = r.json()
-        temp_k = float(json_object['main']['temp'])
-        temp_f = (temp_k - 273.15) * 1.8 + 32
-        return render_template('temperature.html', temp=temp_f)
+   
       
     def _set_headers(self):
         self.send_response(200)
