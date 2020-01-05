@@ -1,32 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Linq;
+using System.Threading;
 
-namespace rfid_reader_to_serial_1st
+namespace Laptop_application_final
 {
     public partial class Form1 : Form
     {
+        const String IPSERVER = "http://10.28.109.112:42069/";
+
         String textInPort = "";
-        String dataSendToServer = "";
         String responseFromServer = "";
         String dataFromGET = "";
+        String oldDataFromGET = "";
+        String roomReceived = "";
+        String ipReceived = "";
+        Dictionary<string, string> RoomsAndIPs = new Dictionary<string, string>();
+        bool once = true;
+        int indexForComma;
 
         public Form1()
         {
             InitializeComponent();
             try
             {
-                
-                //lvAvailableRooms.Items.Add("Master key - ALL Rooms");
+                lvAvailableRooms.Items.Add("Master key");
                 serialPort1.Open();
             }
             catch (Exception errors)
@@ -37,22 +39,14 @@ namespace rfid_reader_to_serial_1st
 
         public string GETrequest(string uri)
         {
-            try
-            {
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
-                request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(uri);
+            request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
 
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                Stream stream = response.GetResponseStream();
-                StreamReader reader = new StreamReader(stream);
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            Stream stream = response.GetResponseStream();
+            StreamReader reader = new StreamReader(stream);
 
-                return reader.ReadToEnd();
-            }
-            catch (Exception errors)
-            {
-                MessageBox.Show("There is a problem with the server, please check connection !");
-                return null;
-            }
+            return reader.ReadToEnd();
         }
 
         private void POSTrequest(string uri, String order)
@@ -84,7 +78,7 @@ namespace rfid_reader_to_serial_1st
                 //We use the StreamReader class to read the incoming Stream at ease
                 StreamReader reader = new StreamReader(dataStream);
                 //We save the stream's content data in a String
-                responseFromServer = reader.ReadToEnd();                
+                responseFromServer = reader.ReadToEnd();
                 //We display the data in the Console for debugging, this helped me a lot when I was building the server on Java with Sockets (I left that code for clarification, we don't use it)
                 Console.WriteLine(responseFromServer);
                 //Here we send the POST request  again if the ESP does not parse it correctly
@@ -101,14 +95,43 @@ namespace rfid_reader_to_serial_1st
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void timer1_Tick(object sender, EventArgs e)
         {
+            lbUID.Text = "Current chip ID: " + textInPort;
 
-        }
 
-        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            serialPort1.Close();
+            if (once)
+            {
+                dataFromGET = GETrequest(IPSERVER);
+                dataFromGET = oldDataFromGET;
+                once = false;
+            }
+
+            dataFromGET = GETrequest(IPSERVER);
+            bool checkIfNewInfo = dataFromGET != oldDataFromGET;
+
+            if (checkIfNewInfo)
+            {
+                oldDataFromGET = dataFromGET;
+
+                for (int i = 0; i < dataFromGET.Length; i++)
+                {
+                    if (dataFromGET[i] == ',')
+                    {
+                        indexForComma = i;
+                        break;
+                    }
+
+                    if (i == dataFromGET.Length)
+                    {
+                        roomReceived = dataFromGET.Substring(0, indexForComma);
+                        ipReceived = dataFromGET.Substring(indexForComma + 1);
+
+                        lvAvailableRooms.Items.Add(roomReceived);
+                        RoomsAndIPs.Add(roomReceived, ipReceived);
+                    }
+                }
+            }
         }
 
         private void serialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)
@@ -119,43 +142,45 @@ namespace rfid_reader_to_serial_1st
             textInPort = textInPort.Substring(1);
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
-        {
-            lbUID.Text = "Current chip ID: " + textInPort;
-            dataFromGET = GETrequest("http://192.168.43.213:42069/");
-            //lbUID.Text = dataFromGET;
-        }
-
         private void btnRegister_Click(object sender, EventArgs e)
         {
             try
             {
                 if (textInPort != "")
                 {
-                    /*if (cbRoom.SelectedItem.ToString() == "Master")
+                    textInPort.Trim();
+
+                    String ipUsed = "";
+
+                    if (RoomsAndIPs.ContainsKey(lvAvailableRooms.SelectedItems[0].Text) || lvAvailableRooms.SelectedItems[0].Text == "Master key")
                     {
-                        textInPort.Trim();
-                                                                    //SEND TO ALL ESPs
-                        dataSendToServer = "*" + tbName.Text + " " + tbAge.Text + " " + textInPort;
-                        //MessageBox.Show("*" + textInPort + "*");
-                                                                    //depending on which room is selected, send to different ESPs
-                        
-                        POSTrequest("http://192.168.43.98/add", textInPort);                      
-                        dataSendToServer = "";
+                        RoomsAndIPs.TryGetValue(lvAvailableRooms.SelectedItems[0].Text, out ipUsed);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Please select a Room !");
+                        return;
+                    }
+
+                    if (lvAvailableRooms.SelectedItems[0].Text == "Master key" && RoomsAndIPs.Count != 0)
+                    {
+                        //SEND TO ALL ESPs        
+                        for (int i = 0; i < RoomsAndIPs.Values.Count; i++)
+                        {
+                            POSTrequest("http://" + RoomsAndIPs.Values.ToList()[i].ToString() + "/add", textInPort);
+                            Thread.Sleep(20);
+                        }
                         textInPort = "";
                     }
-                    else if (cbRoom.SelectedItem.ToString() == "Room 1")
+                    else if (RoomsAndIPs.Count != 0)
                     {
-                        textInPort.Trim();
-                                                                    //SEND TO ESP with room 1
-                        dataSendToServer = "*" + tbName.Text + " " + tbAge.Text + " " + textInPort;
-
-                                                                    //depending on which room is selected, send to different ESPs
-
-                        POSTrequest("http://192.168.43.98/add", textInPort); //ESP 1                       
-                        dataSendToServer = "";
+                        POSTrequest("http://" + ipUsed + "/add", textInPort);
                         textInPort = "";
-                    }*/
+                    }
+                    else
+                    {
+                        MessageBox.Show("There are no rooms in the system yet.");
+                    }
                 }
                 else
                 {
@@ -166,6 +191,17 @@ namespace rfid_reader_to_serial_1st
             {
                 MessageBox.Show("Please fill all fields before attempting to register new user !");
             }
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            serialPort1.Close();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            //RoomsAndIPs.Add("Room 1", "312.321.32.21");
+            //MessageBox.Show("http://" + RoomsAndIPs.Values.ToList()[0].ToString() + "/add", textInPort);
         }
     }
 }
