@@ -12,6 +12,7 @@
 //rfid code
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 
+//rx tx
 SoftwareSerial s(D1, D2);
 
 String oldContent = "";
@@ -19,8 +20,8 @@ bool once = true;
 bool once2 = true;
 //end of rfid code
 
-String ssid = "WiFi 5-506";
-String pass = "VkvBK3Xr";
+String ssid = "Az";
+String pass = "gonoreq5";
 
 char** data;
 
@@ -38,9 +39,11 @@ bool lock = false;
 
 const int G_LED = D8;
 
-void setup() {
-  Serial.begin(9600);
+String serverIP = "";
 
+void setup() 
+{  
+  Serial.begin(9600);
   s.begin(9600);
   while(!s);
 
@@ -107,7 +110,6 @@ void RFIDdetected() {
     char dataArr[content.length()];
     content.toCharArray(dataArr, content.length()+1);
     for(int i=0; i<size; i++){
-      Serial.println(data[i]);
       if(strcmp(dataArr, data[i]) == 0){
         found = true;
         break;
@@ -162,6 +164,22 @@ void add(String cardGiven) {
 String headerS;
 
 void loop() {
+
+  if(Serial.available() > 0){
+
+    String data = "";
+
+    while(Serial.available() > 0){
+      data += (char)Serial.read();
+    }
+
+    Serial.println("SEND " + data);
+
+    for(int i=0; i<data.length(); i++){
+      s.write(data[i]);
+    }
+  }
+  
   if(s.available()){
     String data = s.readString();
 
@@ -184,11 +202,20 @@ void loop() {
       }
       pass = passNew;
       Serial.println("PASS>" + pass);
+    }else if(data[0] == '!'){
+      String ipNew = "";
+      for(int i=0; i<data.length(); i++){
+        if(data[i] != '!'){
+          ipNew += data[i];
+        }
+      }
+      serverIP = ipNew;
     }else if(data[0] == '|'){
       WiFi.begin(ssid, pass);
       
       while(WiFi.status() == WL_DISCONNECTED){
         Serial.println(".");
+        delay(500);
       }
       String ipESP = WiFi.localIP().toString();
       Serial.println(ipESP);
@@ -196,6 +223,17 @@ void loop() {
       for(int i=0; i<ipESP.length(); i++){
         s.write(ipESP[i]);
       }
+
+      http.begin("http://"+serverIP+":42069");
+      http.addHeader("Content-Type", "text/plain");
+       
+      int httpCode = http.POST("1,"+ipESP);
+      String payload = http.getString();
+         
+      http.end();
+
+      Serial.println(payload);
+      
     }
     Serial.println(data);
   }
@@ -311,3 +349,13 @@ void loop() {
 
   http.end();
 */
+
+/* POST
+  http.begin("http://192.168.1.88:8085/hello");
+ http.addHeader("Content-Type", "text/plain");
+ 
+ int httpCode = http.POST("Message from ESP8266");
+ String payload = http.getString();
+   
+ http.end();
+ */

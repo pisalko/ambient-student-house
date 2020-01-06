@@ -31,11 +31,6 @@ void setup(void)
   s.begin(9600);
   while (!s);
 
-  if ( !ble.begin(VERBOSE_MODE) )
-  {
-    error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
-  }
-
   if ( FACTORYRESET_ENABLE )
   {
     /* Perform a factory reset to make sure everything is in a known state */
@@ -44,6 +39,13 @@ void setup(void)
       error(F("Couldn't factory reset"));
     }
   }
+
+  if ( !ble.begin(VERBOSE_MODE) )
+  {
+    error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
+  }
+
+  
 
   /* Disable command echo from Bluefruit */
   ble.echo(false);
