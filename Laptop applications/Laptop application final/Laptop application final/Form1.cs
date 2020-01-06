@@ -11,7 +11,7 @@ namespace Laptop_application_final
 {
     public partial class Form1 : Form
     {
-        const String IPSERVER = "http://10.28.109.112:42069/";
+        const String IPSERVER = "http://10.28.109.111:42069/";
 
         String textInPort = "";
         String responseFromServer = "";
@@ -19,6 +19,7 @@ namespace Laptop_application_final
         String oldDataFromGET = "";
         String roomReceived = "";
         String ipReceived = "";
+        String selectedItemText = "";
         Dictionary<string, string> RoomsAndIPs = new Dictionary<string, string>();
         bool once = true;
         int indexForComma;
@@ -103,7 +104,7 @@ namespace Laptop_application_final
             if (once)
             {
                 dataFromGET = GETrequest(IPSERVER);
-                dataFromGET = oldDataFromGET;
+                oldDataFromGET = dataFromGET;
                 once = false;
             }
 
@@ -121,15 +122,19 @@ namespace Laptop_application_final
                         indexForComma = i;
                         break;
                     }
+                }
 
-                    if (i == dataFromGET.Length)
-                    {
-                        roomReceived = dataFromGET.Substring(0, indexForComma);
-                        ipReceived = dataFromGET.Substring(indexForComma + 1);
+                roomReceived = dataFromGET.Substring(0, indexForComma);
+                ipReceived = dataFromGET.Substring(indexForComma + 1);
 
-                        lvAvailableRooms.Items.Add(roomReceived);
-                        RoomsAndIPs.Add(roomReceived, ipReceived);
-                    }
+                lvAvailableRooms.Items.Add(roomReceived);
+                try
+                {
+                    RoomsAndIPs.Add(roomReceived, ipReceived);
+                }
+                catch(Exception errors)
+                {
+
                 }
             }
         }
@@ -144,17 +149,20 @@ namespace Laptop_application_final
 
         private void btnRegister_Click(object sender, EventArgs e)
         {
-            try
-            {
+            //try
+            //{
                 if (textInPort != "")
                 {
                     textInPort.Trim();
 
                     String ipUsed = "";
 
+                //MessageBox.Show(lvAvailableRooms.SelectedItems[0].Text);
+
                     if (RoomsAndIPs.ContainsKey(lvAvailableRooms.SelectedItems[0].Text) || lvAvailableRooms.SelectedItems[0].Text == "Master key")
                     {
                         RoomsAndIPs.TryGetValue(lvAvailableRooms.SelectedItems[0].Text, out ipUsed);
+                        //MessageBox.Show(ipUsed);
                     }
                     else
                     {
@@ -167,8 +175,9 @@ namespace Laptop_application_final
                         //SEND TO ALL ESPs        
                         for (int i = 0; i < RoomsAndIPs.Values.Count; i++)
                         {
+                        MessageBox.Show(RoomsAndIPs.Values.ToList()[i].ToString());
                             POSTrequest("http://" + RoomsAndIPs.Values.ToList()[i].ToString() + "/add", textInPort);
-                            Thread.Sleep(20);
+                            //Thread.Sleep(20);
                         }
                         textInPort = "";
                     }
@@ -186,11 +195,11 @@ namespace Laptop_application_final
                 {
                     MessageBox.Show("RFID tag not read properly. Please put the tag on the reader again !");
                 }
-            }
+           /* }
             catch (Exception)
             {
                 MessageBox.Show("Please fill all fields before attempting to register new user !");
-            }
+            }*/
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -202,6 +211,22 @@ namespace Laptop_application_final
         {
             //RoomsAndIPs.Add("Room 1", "312.321.32.21");
             //MessageBox.Show("http://" + RoomsAndIPs.Values.ToList()[0].ToString() + "/add", textInPort);
+        }
+
+        private void lvAvailableRooms_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lvAvailableRooms.SelectedIndices.Count <= 0)
+            {
+                return;
+            }
+            int intselectedindex = lvAvailableRooms.SelectedIndices[0];
+            if (intselectedindex >= 0)
+            {
+                selectedItemText = lvAvailableRooms.Items[intselectedindex].Text;
+
+                //do something
+                MessageBox.Show(lvAvailableRooms.Items[intselectedindex].Text); 
+            }
         }
     }
 }
