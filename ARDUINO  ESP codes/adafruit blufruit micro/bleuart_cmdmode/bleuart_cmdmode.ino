@@ -66,8 +66,6 @@ void setup(void)
 void loop(void)
 {
 
-
-
   if (ble.isConnected())
   {
     
