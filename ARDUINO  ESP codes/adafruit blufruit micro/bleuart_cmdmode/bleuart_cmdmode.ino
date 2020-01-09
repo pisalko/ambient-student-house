@@ -6,9 +6,17 @@
 
 #include <SoftwareSerial.h>
 
-    #define FACTORYRESET_ENABLE         1
+#define FACTORYRESET_ENABLE         1
 
+const int RED = A1;
+const int GREEN = A2;
+const int BLUE = A3;
+int r = 200;
+int g = 200;
+int b = 200;
+unsigned long lastCheck = 0;
 
+bool lightModeParty, lightModeDefault, lightModeStudy, lightModeOff = false;
 bool once = true;
 String data = "";
 
@@ -35,7 +43,7 @@ void setup(void)
   {
     /* Perform a factory reset to make sure everything is in a known state */
     Serial.println(F("Performing a factory reset: "));
-    if ( ! ble.factoryReset() ){
+    if ( ! ble.factoryReset() ) {
       error(F("Couldn't factory reset"));
     }
   }
@@ -45,7 +53,10 @@ void setup(void)
     error(F("Couldn't find Bluefruit, make sure it's in CoMmanD mode & check wiring?"));
   }
 
-  
+  pinMode(RED, OUTPUT);
+  pinMode(GREEN, OUTPUT);
+  pinMode(BLUE, OUTPUT);
+
 
   /* Disable command echo from Bluefruit */
   ble.echo(false);
@@ -68,7 +79,7 @@ void loop(void)
 
   if (ble.isConnected())
   {
-    
+
     if (s.available()) {
       Serial.println("tuka vliza brat");
       data = s.readString();
@@ -92,16 +103,76 @@ void loop(void)
     ble.readline();
     if (strcmp(ble.buffer, "OK") == 0) {
       // no data
-      return;
+      //return;
     }
-    // Some data was found, its in the buffer
-    Serial.print(F("[Recv] "));
-    Serial.println(ble.buffer);
+    else
+    {
+      // Some data was found, its in the buffer
+      Serial.print(F("[Recv] "));
+      Serial.println(ble.buffer);
+    }
 
     // TRANSFER UART HERE
 
     String data = ble.buffer;
-    for (int i = 0; i < data.length(); i++)s.write(data[i]);
+    //-----------------------------------------
+    //-------from here lights
+    if (data == "lp")
+    {
+      //do stuff light party
+      lightModeOff = false;
+      lightModeStudy = false;
+      lightModeDefault = false;
+      lightModeParty = true;
+    }
+    else if (data == "ls")
+    {
+      //do stuff light study
+      lightModeOff = false;
+      lightModeStudy = true;
+      lightModeDefault = false;
+      lightModeParty = false;
+    }
+    else if (data == "ld")
+    {
+      lightModeOff = false;
+      lightModeStudy = false;
+      lightModeDefault = true;
+      lightModeParty = false;
+      //do stuff light default (ith time)
+    }
+    else if (data == "lo")
+    {
+      lightModeOff = true;
+      lightModeStudy = false;
+      lightModeDefault = false;
+      lightModeParty = false;
+      //do stuff light off
+    }
+    //------to here for lights
+    //-----------------------------------------
+    //------from here fan state
+    else if (data.startsWith("fs"))
+    {
+      //do stuff fan
+    }
+    //-------to here fan state
+    //-----------------------------------------
+    //-------from here curtain state
+    else if (data.startsWith("cs"))
+    {
+      //do stuff curtain, servo
+    }
+    //-------to here curtain state
+    //-----------------------------------------
+    //-------from here send to ESP
+    else
+    {
+      for (int i = 0; i < data.length(); i++)
+        s.write(data[i]);
+    }
+    //------to here send to ESP
+    //-----------------------------------------
 
     ble.waitForOK();
   }
@@ -111,6 +182,52 @@ void loop(void)
     {
       Serial.println("Disconnected from device");
       once = false;
+    }
+  }
+
+  if (lightModeOff)
+  {
+    r = 0;
+    g = 0;
+    b = 0;
+    analogWrite(RED, r);
+    analogWrite(GREEN, g);
+    analogWrite(BLUE, b);
+  }
+  else if (lightModeStudy)
+  {
+    r = 255;
+    g = 0;
+    b = 11;
+    analogWrite(RED, r);
+    analogWrite(GREEN, g);
+    analogWrite(BLUE, b);
+  }
+  else if (lightModeDefault)
+  {
+    //fancy stuff with time
+    r = 0;
+    g = 0;
+    b = 255;
+    analogWrite(RED, r);
+    analogWrite(GREEN, g);
+    analogWrite(BLUE, b);
+  }
+  else if (lightModeParty)
+  {
+    if (millis() - lastCheck > 500)
+    {
+      r = random(0, 255);
+      g = random(0, 255);
+      b = random(0, 255);
+      lastCheck = millis();
+      analogWrite(RED, r);
+      analogWrite(GREEN, g);
+      analogWrite(BLUE, b);
+      /*Serial.println("vliza zavinagi brat");
+        Serial.println(r);
+        Serial.println(g);
+        Serial.println(b);*/
     }
   }
 }
