@@ -23,7 +23,7 @@ bool once2 = true;
 String ssid = "Az";
 String pass = "gonoreq5";
 
-char** data;
+char** dataARRAY;
 
 int size = 0;
 int cap = 2;
@@ -57,7 +57,7 @@ void setup()
 
   Serial.println(WiFi.localIP());
 
-  data = (char **)malloc(sizeof(char[12]) * cap);
+  dataARRAY = (char **)malloc(sizeof(char[12]) * cap);
   pinMode(REQUEST_PIN, INPUT);
 
   pinMode(G_LED, OUTPUT);
@@ -110,7 +110,7 @@ void RFIDdetected() {
     char dataArr[content.length()];
     content.toCharArray(dataArr, content.length()+1);
     for(int i=0; i<size; i++){
-      if(strcmp(dataArr, data[i]) == 0){
+      if(strcmp(dataArr, dataARRAY[i]) == 0){
         found = true;
         break;
       }
@@ -138,25 +138,25 @@ void add(String cardGiven) {
   cardGiven.toCharArray(card, 12);
 
   for (int i = 0; i < size; i++) {
-    if (strcmp(data[i], card) == 0) return;
+    if (strcmp(dataARRAY[i], card) == 0) return;
   }
 
-  data[size] = (char *) malloc(sizeof(char[12]));
-  cardGiven.toCharArray(data[size], 12);
+  dataARRAY[size] = (char *) malloc(sizeof(char[12]));
+  cardGiven.toCharArray(dataARRAY[size], 12);
 
   size++;
 
   if (size == cap - 1) {
     cap += 3;
-    data = (char **) realloc(data, sizeof(char[12]) * cap);
+    dataARRAY = (char **) realloc(dataARRAY, sizeof(char[12]) * cap);
 
-    if (data == NULL)Serial.println("QJ PISHKI GEI SMOTAN NAUCHI SE DA KODISH PEERAS NAEBAN");
+    if (dataARRAY == NULL)Serial.println("QJ PISHKI GEI SMOTAN NAUCHI SE DA KODISH PEERAS NAEBAN");
   }
 
 
   Serial.println("-------------");
   for (int i = 0; i < size; i++) {
-    Serial.println(String(data[i]));
+    Serial.println(String(dataARRAY[i]));
   }
   Serial.println("-------------");
 }
@@ -234,6 +234,27 @@ void loop() {
 
       Serial.println(payload);
       
+    }
+    if (data[0] == 't')
+    {
+      Serial.println("VLIZA BRAT");
+      if (data == "time")
+      {
+        Serial.println("TUAK SUSHTO MALIIIIIIIIIIIIII");
+        http.begin("http://worldtimeapi.org/api/timezone/Europe/Amsterdam.txt");
+      int httpCode = http.GET();
+
+      String response = http.getString();
+
+      int startIndex = response.indexOf("main") + 7;
+      int endIndex = response.indexOf("description") - 3;
+
+      String timeFromApi = response.substring(startIndex, endIndex);
+
+      for(int i=0; i<timeFromApi.length(); i++)s.write(timeFromApi[i]);
+      Serial.println(timeFromApi);
+      data = "";
+      }
     }
     Serial.println(data);
   }
