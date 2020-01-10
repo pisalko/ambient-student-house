@@ -12,7 +12,6 @@
 //rfid code
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 
-//rx tx
 SoftwareSerial s(D1, D2);
 
 String oldContent = "";
@@ -20,10 +19,10 @@ bool once = true;
 bool once2 = true;
 //end of rfid code
 
-String ssid = "Az";
-String pass = "gonoreq5";
+String ssid = "WiFi 5-506";
+String pass = "VkvBK3Xr";
 
-char** dataARRAY;
+char** data;
 
 int size = 0;
 int cap = 2;
@@ -39,11 +38,9 @@ bool lock = false;
 
 const int G_LED = D8;
 
-String serverIP = "";
-
-void setup() 
-{  
+void setup() {
   Serial.begin(9600);
+
   s.begin(9600);
   while(!s);
 
@@ -57,7 +54,7 @@ void setup()
 
   Serial.println(WiFi.localIP());
 
-  dataARRAY = (char **)malloc(sizeof(char[12]) * cap);
+  data = (char **)malloc(sizeof(char[12]) * cap);
   pinMode(REQUEST_PIN, INPUT);
 
   pinMode(G_LED, OUTPUT);
@@ -110,7 +107,8 @@ void RFIDdetected() {
     char dataArr[content.length()];
     content.toCharArray(dataArr, content.length()+1);
     for(int i=0; i<size; i++){
-      if(strcmp(dataArr, dataARRAY[i]) == 0){
+      Serial.println(data[i]);
+      if(strcmp(dataArr, data[i]) == 0){
         found = true;
         break;
       }
@@ -138,25 +136,25 @@ void add(String cardGiven) {
   cardGiven.toCharArray(card, 12);
 
   for (int i = 0; i < size; i++) {
-    if (strcmp(dataARRAY[i], card) == 0) return;
+    if (strcmp(data[i], card) == 0) return;
   }
 
-  dataARRAY[size] = (char *) malloc(sizeof(char[12]));
-  cardGiven.toCharArray(dataARRAY[size], 12);
+  data[size] = (char *) malloc(sizeof(char[12]));
+  cardGiven.toCharArray(data[size], 12);
 
   size++;
 
   if (size == cap - 1) {
     cap += 3;
-    dataARRAY = (char **) realloc(dataARRAY, sizeof(char[12]) * cap);
+    data = (char **) realloc(data, sizeof(char[12]) * cap);
 
-    if (dataARRAY == NULL)Serial.println("QJ PISHKI GEI SMOTAN NAUCHI SE DA KODISH PEERAS NAEBAN");
+    if (data == NULL)Serial.println("QJ PISHKI GEI SMOTAN NAUCHI SE DA KODISH PEERAS NAEBAN");
   }
 
 
   Serial.println("-------------");
   for (int i = 0; i < size; i++) {
-    Serial.println(String(dataARRAY[i]));
+    Serial.println(String(data[i]));
   }
   Serial.println("-------------");
 }
@@ -164,22 +162,6 @@ void add(String cardGiven) {
 String headerS;
 
 void loop() {
-
-  if(Serial.available() > 0){
-
-    String data = "";
-
-    while(Serial.available() > 0){
-      data += (char)Serial.read();
-    }
-
-    Serial.println("SEND " + data);
-
-    for(int i=0; i<data.length(); i++){
-      s.write(data[i]);
-    }
-  }
-  
   if(s.available()){
     String data = s.readString();
 
@@ -202,58 +184,17 @@ void loop() {
       }
       pass = passNew;
       Serial.println("PASS>" + pass);
-    }else if(data[0] == '!'){
-      String ipNew = "";
-      for(int i=0; i<data.length(); i++){
-        if(data[i] != '!'){
-          ipNew += data[i];
-        }
-      }
-      serverIP = ipNew;
     }else if(data[0] == '|'){
       WiFi.begin(ssid, pass);
       
       while(WiFi.status() == WL_DISCONNECTED){
         Serial.println(".");
-        delay(500);
       }
       String ipESP = WiFi.localIP().toString();
       Serial.println(ipESP);
 
       for(int i=0; i<ipESP.length(); i++){
         s.write(ipESP[i]);
-      }
-
-      http.begin("http://"+serverIP+":42069");
-      http.addHeader("Content-Type", "text/plain");
-       
-      int httpCode = http.POST("1,"+ipESP);
-      String payload = http.getString();
-         
-      http.end();
-
-      Serial.println(payload);
-      
-    }
-    if (data[0] == 't')
-    {
-      Serial.println("VLIZA BRAT");
-      if (data == "time")
-      {
-        Serial.println("TUAK SUSHTO MALIIIIIIIIIIIIII");
-        http.begin("http://worldtimeapi.org/api/timezone/Europe/Amsterdam.txt");
-      int httpCode = http.GET();
-
-      String response = http.getString();
-
-      int startIndex = response.indexOf("main") + 7;
-      int endIndex = response.indexOf("description") - 3;
-
-      String timeFromApi = response.substring(startIndex, endIndex);
-
-      for(int i=0; i<timeFromApi.length(); i++)s.write(timeFromApi[i]);
-      Serial.println(timeFromApi);
-      data = "";
       }
     }
     Serial.println(data);
@@ -348,6 +289,16 @@ void loop() {
 
       String weather = response.substring(startIndex, endIndex);
 
+      startIndex = response.indexOf("temp") + 7;
+      endIndex = response.indexOf("feels_like") - 3;
+
+      weather += "; " + response.substring(startIndex, endIndex);
+
+      startIndex = response.indexOf("humidity") + 10;
+      endIndex = response.indexOf("visibility") - 3;
+
+      weather += ", " + response.substring(startIndex, endIndex);
+
       for(int i=0; i<weather.length(); i++)s.write(weather[i]);
       Serial.println(weather);
     }
@@ -370,13 +321,3 @@ void loop() {
 
   http.end();
 */
-
-/* POST
-  http.begin("http://192.168.1.88:8085/hello");
- http.addHeader("Content-Type", "text/plain");
- 
- int httpCode = http.POST("Message from ESP8266");
- String payload = http.getString();
-   
- http.end();
- */
