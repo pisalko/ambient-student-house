@@ -292,12 +292,12 @@ void loop() {
       startIndex = response.indexOf("temp") + 7;
       endIndex = response.indexOf("feels_like") - 3;
 
-      weather += "; " + response.substring(startIndex, endIndex);
+      weather += "$ " + response.substring(startIndex, endIndex);
 
       startIndex = response.indexOf("humidity") + 10;
       endIndex = response.indexOf("visibility") - 3;
 
-      weather += ", " + response.substring(startIndex, endIndex);
+      weather += "% " + response.substring(startIndex, endIndex);
 
       for(int i=0; i<weather.length(); i++)s.write(weather[i]);
       Serial.println(weather);
