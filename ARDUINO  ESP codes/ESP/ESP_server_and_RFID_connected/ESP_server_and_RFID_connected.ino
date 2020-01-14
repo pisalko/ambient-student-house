@@ -13,6 +13,7 @@
 MFRC522 mfrc522(SS_PIN, RST_PIN);   // Create MFRC522 instance.
 
 SoftwareSerial s(D1, D2);
+//RX TX
 
 String oldContent = "";
 bool once = true;
@@ -21,6 +22,7 @@ bool once2 = true;
 
 String ssid = "WiFi 5-506";
 String pass = "VkvBK3Xr";
+String serverIP = "";
 
 char** data;
 
@@ -159,6 +161,31 @@ void add(String cardGiven) {
   Serial.println("-------------");
 }
 
+void remove(String cardGiven){
+  char card[12];
+  cardGiven.toCharArray(card, 12);
+
+  int found_index = -1;
+
+  for(int i=0; i<size; i++){
+    if(strcmp(data[i], card) == 0){
+      found_index = i;
+      break;
+    }
+  }
+
+  if(found_index != -1){
+    for(int i=found_index; i<size-2; i++){
+      data[i] = data[i+1];
+    }
+    data[size-1] = NULL;
+    size--;
+    
+  }else{
+    //brrbrb nqa takova brat
+  }
+}
+
 String headerS;
 
 void loop() {
@@ -184,11 +211,21 @@ void loop() {
       }
       pass = passNew;
       Serial.println("PASS>" + pass);
+    }else if(data[0] == '!'){
+      String serverIPNew = "";
+      for(int i=0; i<data.length(); i++){
+        if(data[i] != '!'){
+          serverIPNew += data[i];
+        }
+      }
+      serverIP = serverIPNew;
+      Serial.println("IP>" + serverIP);
     }else if(data[0] == '|'){
       WiFi.begin(ssid, pass);
       
       while(WiFi.status() == WL_DISCONNECTED){
         Serial.println(".");
+        delay(50);
       }
       String ipESP = WiFi.localIP().toString();
       Serial.println(ipESP);
@@ -196,6 +233,15 @@ void loop() {
       for(int i=0; i<ipESP.length(); i++){
         s.write(ipESP[i]);
       }
+
+      http.begin("http://"+serverIP+":42069");
+      http.addHeader("Content-Type", "text/plain");
+       
+      int httpCode = http.POST("🍆,"+ipESP);
+      String payload = http.getString();
+         
+      http.end();
+      Serial.println("RES>"+payload);
     }
     Serial.println(data);
   }
@@ -255,6 +301,37 @@ void loop() {
               client.println();
               if (data == "")client.println("ne");
               else client.println("da");
+            } else if(headerS.indexOf("POST /remove") >= 0){
+              int content_length = 0, index = headerS.indexOf("Content-Length: "), i;
+
+              for(i=index; headerS[i] != '\n'; i++);
+
+              content_length = headerS.substring(index + 16, i).toInt();
+              delay(10);
+
+              String data = "";
+
+              for(int ii=0; ii<content_length; ii++){
+                data += (char)client.read();
+              }
+
+              for(int i=0; i<data.length(); i++){
+                if((data[i] > 90 || data[i] < 48) && data[i] != 32){
+                  data = "";
+                  break;
+                }
+              }
+
+              Serial.println(">>" + data);
+
+              if (data.length() == 11)remove(data);
+
+              client.println("Content-Length: 2");
+              client.println("Connection: close");
+              client.println();
+              if (data == "")client.println("ne");
+              else client.println("da");
+              
             }
 
             // The HTTP response ends with another blank line
@@ -292,12 +369,12 @@ void loop() {
       startIndex = response.indexOf("temp") + 7;
       endIndex = response.indexOf("feels_like") - 3;
 
-      weather += "; " + response.substring(startIndex, endIndex);
+      weather += "$ " + response.substring(startIndex, endIndex);
 
       startIndex = response.indexOf("humidity") + 10;
       endIndex = response.indexOf("visibility") - 3;
 
-      weather += ", " + response.substring(startIndex, endIndex);
+      weather += "% " + response.substring(startIndex, endIndex);
 
       for(int i=0; i<weather.length(); i++)s.write(weather[i]);
       Serial.println(weather);
