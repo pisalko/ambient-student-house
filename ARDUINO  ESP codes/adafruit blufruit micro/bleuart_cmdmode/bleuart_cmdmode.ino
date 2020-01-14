@@ -8,10 +8,11 @@
 
 #define FACTORYRESET_ENABLE         1
 
-const int RED = A1;
+const int RED = 11;
 const int GREEN = A2;
-const int BLUE = A3;
-const int DC_FAN = A4;
+const int BLUE = A1;
+const int DC_FAN = 5;
+const int SERVO_PIN = 6; //do additional pin;
 
 
 int r = 200;
@@ -40,10 +41,6 @@ void error(const __FlashStringHelper*err) {
 void setup(void)
 {
   Serial.begin(9600);
-  s.begin(9600);
-  while (!s);
-  Serial.println("SS connected");
-  curtains.attach(9);
 
   if ( FACTORYRESET_ENABLE )
   {
@@ -53,6 +50,13 @@ void setup(void)
       error(F("Couldn't factory reset"));
     }
   }
+
+  s.begin(9600);
+  while (!s);
+  Serial.println("SS connected");
+  curtains.attach(SERVO_PIN);
+
+
 
   if ( !ble.begin(VERBOSE_MODE) )
   {
@@ -124,38 +128,42 @@ void loop()
         weather_factor = 0;
 
       DC_FAN_SPEED = weather_factor + temperature_factor + humidity_factor;
+      analogWrite(DC_FAN, DC_FAN_SPEED);
     }
   }
-  analogWrite(DC_FAN, DC_FAN_SPEED);
-  Serial.println(DC_FAN_SPEED);
+  //Serial.println(DC_FAN_SPEED);
 
   if (ble.isConnected())
   {
 
-    if (s.available()) {
+    if (s.available())
+    {
       data = s.readString();
       once = true;
 
-      /*// Send characters to Bluefruit
-        Serial.print("[Send] ");
-        Serial.println(data);
+      // Send characters to Bluefruit
+      Serial.print("[Send] ");
+      Serial.println(data);
 
-        ble.print("AT+BLEUARTTX=");
-        ble.println(data);
+      ble.print("AT+BLEUARTTX=");
+      ble.println(data);
 
-        // check response stastus
-        if (! ble.waitForOK() ) {
+      // check response stastus
+      if (! ble.waitForOK() ) {
         Serial.println(F("Failed to send?"));
-        }*/
+      }
     }
 
 
     // Check for incoming characters from Bluefruit
     ble.println("AT+BLEUARTRX");
     ble.readline();
-    if (strcmp(ble.buffer, "OK") == 0) {
+    if (strcmp(ble.buffer, "OK") == 0)
+    {
+      //Serial.println("return statement");
       // no data
-      return;
+
+      //return;
     }
     else
     {
@@ -167,71 +175,82 @@ void loop()
     // TRANSFER UART HERE
 
     String data = ble.buffer;
-    //-----------------------------------------
-    //-------from here lights
-    if (data == "lp")
+    if (!(strcmp(ble.buffer, "OK")) == 0)
     {
-      //do stuff light party
-      lightModeOff = false;
-      lightModeStudy = false;
-      lightModeDefault = false;
-      lightModeParty = true;
-    }
-    else if (data == "ls")
-    {
-      //do stuff light study
-      lightModeOff = false;
-      lightModeStudy = true;
-      lightModeDefault = false;
-      lightModeParty = false;
-    }
-    else if (data == "ld")
-    {
-      lightModeOff = false;
-      lightModeStudy = false;
-      lightModeDefault = true;
-      lightModeParty = false;
-      //do stuff light default (ith time)
-    }
-    else if (data == "lo")
-    {
-      lightModeOff = true;
-      lightModeStudy = false;
-      lightModeDefault = false;
-      lightModeParty = false;
-      //do stuff light off
-    }
-    //------to here for lights
-    //-----------------------------------------
-    /*//------from here fan state
+      //Serial.println("ble data: " + data);
+      //-----------------------------------------
+      //-------from here lights
+      if (data == "lp")
+      {
+        //do stuff light party
+        lightModeOff = false;
+        lightModeStudy = false;
+        lightModeDefault = false;
+        lightModeParty = true;
+      }
+      else if (data == "ls")
+      {
+        //do stuff light study
+        lightModeOff = false;
+        lightModeStudy = true;
+        lightModeDefault = false;
+        lightModeParty = false;
+      }
+      else if (data == "ld")
+      {
+        lightModeOff = false;
+        lightModeStudy = false;
+        lightModeDefault = true;
+        lightModeParty = false;
+        //do stuff light default (ith time)
+      }
+      else if (data == "lo")
+      {
+        lightModeOff = true;
+        lightModeStudy = false;
+        lightModeDefault = false;
+        lightModeParty = false;
+        //do stuff light off
+      }
+      //------to here for lights
+      //-----------------------------------------
+      //------from here fan state
       else if (data.startsWith("fs"))
       {
-      //do stuff fan
-      }
-      //-------to here fan state*/
-    //-----------------------------------------
-    //-------from here curtain state
-    else if (data.startsWith("cs"))
-    {
-      //do stuff curtain, servo
-      String curtainsPos = data.substring(3);
-      int degreesCur = curtainsPos.toInt();
-      
-      curtains.write(degreesCur);
-      //Serial.println(curtainsInteger);
-    }
-    //-------to here curtain state
-    //-----------------------------------------
-    //-------from here send to ESP
-    else
-    {
-      for (int i = 0; i < data.length(); i++)
-        s.write(data[i]);
-    }
-    //------to here send to ESP
-    //-----------------------------------------
+        String fanSpeed = data.substring(2);
+        int fanSpeedInt = fanSpeed.toInt();
+        int fanSpeedIntMap = map(fanSpeedInt, 0, 1023, 0, 255);
+        if (fanSpeedIntMap <= 10)
+          fanSpeedIntMap = 0;
+        Serial.println(fanSpeed + "  " + fanSpeedIntMap);
 
-    ble.waitForOK();
+        analogWrite(DC_FAN, fanSpeedIntMap);
+      }
+      //-------to here fan state
+      //-----------------------------------------
+      //-------from here curtain state
+      else if (data.startsWith("cs"))
+      {
+        //do stuff curtain, servo
+        String curtainsPos = data.substring(2);
+        int degreesCur = curtainsPos.toInt();
+
+        customPWM(degreesCur);
+        //Serial.println(curtainsInteger);
+      }
+      //-------to here curtain state
+      //-----------------------------------------
+      //-------from here send to ESP
+      else
+      {
+        for (int i = 0; i < data.length(); i++)
+          s.write(data[i]);
+      }
+      //------to here send to ESP
+      //-----------------------------------------
+
+      ble.waitForOK();
+    }
   }
   else
   {
@@ -274,9 +293,9 @@ void loop()
   {
     if (millis() - lastCheck > 500)
     {
-      r = random(0, 255);
-      g = random(0, 255);
-      b = random(0, 255);
+      r = random(50, 255);
+      g = random(50, 255);
+      b = random(50, 255);
       lastCheck = millis();
       analogWrite(RED, r);
       analogWrite(GREEN, g);
@@ -315,4 +334,11 @@ bool getUserInput(char buffer[], uint8_t maxSize)
   } while ( (count < maxSize) && (Serial.available()) );
 
   return true;
+}
+
+void customPWM(int value) {
+  digitalWrite(SERVO_PIN, HIGH);
+  delayMicroseconds((value / 2000) * 2000);
+  digitalWrite(SERVO_PIN, LOW);
+  delayMicroseconds(2000 - ((value / 200) * 2000));
 }

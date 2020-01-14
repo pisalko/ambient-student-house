@@ -11,7 +11,7 @@ namespace Laptop_application_final
 {
     public partial class Form1 : Form
     {
-        const String IPSERVER = "http://10.28.109.111:42069/";
+        const String IPSERVER = "http://192.168.43.213:42069/";
 
         String textInPort = "";
         String responseFromServer = "";
