@@ -11,7 +11,7 @@ namespace Laptop_application_final
 {
     public partial class Form1 : Form
     {
-        const String IPSERVER = "http://192.168.43.213:42069/";
+        const String IPSERVER = "http://10.28.109.111:42069/";
 
         String textInPort = "";
         String responseFromServer = "";
@@ -19,7 +19,7 @@ namespace Laptop_application_final
         String oldDataFromGET = "";
         String roomReceived = "";
         String ipReceived = "";
-        String selectedItemText = "";
+        String textAddedToLb = "";
         Dictionary<string, string> RoomsAndIPs = new Dictionary<string, string>();
         bool once = true;
         int indexForComma;
@@ -32,7 +32,7 @@ namespace Laptop_application_final
                 lvAvailableRooms.Items.Add("Master key");
                 serialPort1.Open();
             }
-            catch (Exception errors)
+            catch (Exception)
             {
                 MessageBox.Show("Arduino not connected to the port");
             }
@@ -98,7 +98,7 @@ namespace Laptop_application_final
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            lbUID.Text = "Current chip ID: " + textInPort;
+            labUID.Text = "Current chip ID: " + textInPort;
 
 
             if (once)
@@ -177,14 +177,50 @@ namespace Laptop_application_final
                         {
                         //MessageBox.Show(RoomsAndIPs.Values.ToList()[i].ToString());
                             POSTrequest("http://" + RoomsAndIPs.Values.ToList()[i].ToString() + "/add", textInPort);
-                            //Thread.Sleep(20);
+
+                        bool found = false;
+                        foreach (string s in lbRegistered.Items)
+                        {
+                            if (s.Contains(textInPort))
+                            {
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found)
+                        {
+                            textAddedToLb = tbName.Text + " " + tbAge.Text + " " + "Room: " + lvAvailableRooms.SelectedItems[0].Text + "  TAG ID: " + textInPort;
+                            lbRegistered.Items.Add(textAddedToLb);
+                        }
+                        else
+                            MessageBox.Show("TAG already assigned to another user !");
+                        
+                        //Thread.Sleep(20);
                         }
                         textInPort = "";
                     }
                     else if (RoomsAndIPs.Count != 0)
                     {
                         POSTrequest("http://" + ipUsed + "/add", textInPort);
+
+                        bool found = false;
+                        foreach (string s in lbRegistered.Items)
+                        {
+                            if (s.Contains(textInPort))
+                            { 
+                                found = true;
+                                break;
+                            }
+                        }
+                    if (!found)
+                    {
+                        textAddedToLb = tbName.Text + " " + tbAge.Text + " " + "Room: " + lvAvailableRooms.SelectedItems[0].Text + "  TAG ID: " + textInPort;
+                        lbRegistered.Items.Add(textAddedToLb);                       
+                    }
+                    else
+                        MessageBox.Show("TAG already assigned to another user !");
                         textInPort = "";
+                    
                     }
                     else
                     {
@@ -215,17 +251,42 @@ namespace Laptop_application_final
 
         private void lvAvailableRooms_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (lvAvailableRooms.SelectedIndices.Count <= 0)
-            {
-                return;
-            }
-            int intselectedindex = lvAvailableRooms.SelectedIndices[0];
-            if (intselectedindex >= 0)
-            {
-                selectedItemText = lvAvailableRooms.Items[intselectedindex].Text;
+            
+        }
 
-                //do something
-                MessageBox.Show(lvAvailableRooms.Items[intselectedindex].Text); 
+        private void btnRemove_Click(object sender, EventArgs e)
+        {
+            //textAddedToLb = tbName.Text + " " + tbAge.Text + " " + "Room: " + lvAvailableRooms.SelectedItems[0].Text + "  TAG ID: " + textInPort;
+
+            MessageBox.Show(textAddedToLb);
+
+            int add = 2;
+            if (textAddedToLb.Contains("Master Key")) add++;
+
+            String room = (add == 3 ? "Master Key" : textAddedToLb.Split(' ')[3]);
+            String tag = (textAddedToLb.Split(' ')[5 + add] + " " + textAddedToLb.Split(' ')[6 + add] + " " + textAddedToLb.Split(' ')[7 + add] + " " + textAddedToLb.Split(' ')[8 + add]);
+
+            String roomIP = RoomsAndIPs[room];
+            if (add == 2)
+            {
+                POSTrequest("http://" + roomIP + "/remove", tag);
+            }
+            else
+            {
+                for (int i = 0; i < RoomsAndIPs.Values.Count; i++)
+                {
+                    //MessageBox.Show(RoomsAndIPs.Values.ToList()[i].ToString());
+                    POSTrequest("http://" + RoomsAndIPs.Values.ToList()[i].ToString() + "/remove", tag);
+                }
+            }
+
+            try
+            {
+                lbRegistered.Items.RemoveAt(lbRegistered.SelectedIndex);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                MessageBox.Show("Please select a registered user");
             }
         }
     }
