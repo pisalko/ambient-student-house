@@ -364,7 +364,7 @@ void loop() {
       int startIndex = response.indexOf("main") + 7;
       int endIndex = response.indexOf("description") - 3;
 
-      String weather = response.substring(startIndex, endIndex);
+      String weather = "*" + response.substring(startIndex, endIndex);
 
       startIndex = response.indexOf("temp") + 7;
       endIndex = response.indexOf("feels_like") - 3;

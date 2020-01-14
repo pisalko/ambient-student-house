@@ -3,14 +3,17 @@
 #include "Adafruit_BluefruitLE_SPI.h"
 #include "Adafruit_BluefruitLE_UART.h"
 #include "BluefruitConfig.h"
-
 #include <SoftwareSerial.h>
+#include <Servo.h>
 
 #define FACTORYRESET_ENABLE         1
 
 const int RED = A1;
 const int GREEN = A2;
 const int BLUE = A3;
+const int DC_FAN = A4;
+
+
 int r = 200;
 int g = 200;
 int b = 200;
@@ -20,6 +23,9 @@ bool lightModeParty, lightModeDefault, lightModeStudy, lightModeOff = false;
 bool once = true;
 String data = "";
 
+int DC_FAN_SPEED = 0;
+
+Servo curtains;
 SoftwareSerial s(13, 12);
 
 /* ...hardware SPI, using SCK/MOSI/MISO hardware SPI pins and then user selected CS/IRQ/RST */
@@ -34,10 +40,10 @@ void error(const __FlashStringHelper*err) {
 void setup(void)
 {
   Serial.begin(9600);
-  Serial.println("here");
-
   s.begin(9600);
   while (!s);
+  Serial.println("SS connected");
+  curtains.attach(9);
 
   if ( FACTORYRESET_ENABLE )
   {
@@ -56,6 +62,8 @@ void setup(void)
   pinMode(RED, OUTPUT);
   pinMode(GREEN, OUTPUT);
   pinMode(BLUE, OUTPUT);
+  pinMode(DC_FAN, OUTPUT);
+
 
 
   /* Disable command echo from Bluefruit */
@@ -74,27 +82,71 @@ void setup(void)
     @brief  Constantly poll for new command or response data
 */
 /**************************************************************************/
-void loop(void)
+void loop()
 {
+  if (s.available())
+  {
+    String weatherReport;
+    weatherReport = Serial.readStringUntil('\r');
+    if (weatherReport.startsWith("*"))
+    {
+      int weather_factor = 0;
+      int temperature_factor = 0;
+      int humidity_factor = 0;
+      int startIndex = 1;
+      String weather = "";
+      String temperatureString = "";
+      double temperature = 0;
+      String humidityString = "";
+      double humidity = 0;
+      int endIndex = weatherReport.indexOf("$");
+      weather = weatherReport.substring(startIndex, endIndex);
+      startIndex = weatherReport.indexOf("$") + 1;
+      endIndex = weatherReport.indexOf("%");
+      temperatureString = weatherReport.substring(startIndex, endIndex);
+      temperature = temperatureString.toDouble();
+      startIndex = weatherReport.indexOf("%") + 1;
+      endIndex = weatherReport.indexOf(weatherReport.length());
+      humidityString = weatherReport.substring(startIndex, endIndex);
+      humidity = humidityString.toDouble();
+      if (temperature >= 18 && temperature <= 40)
+        temperature_factor = map(temperature, 18, 40, 0, 85);
+      else
+        temperature_factor = 0;
+      if (humidity >= 70 && humidity <= 100)
+        humidity_factor = map(humidity, 70, 100, 0, 85);
+      else
+        humidity_factor = 0;
+
+      if (weather == "Sun")
+        weather_factor = 255 / 3;
+      else
+        weather_factor = 0;
+
+      DC_FAN_SPEED = weather_factor + temperature_factor + humidity_factor;
+    }
+  }
+  analogWrite(DC_FAN, DC_FAN_SPEED);
+  Serial.println(DC_FAN_SPEED);
 
   if (ble.isConnected())
   {
 
     if (s.available()) {
-      Serial.println("tuka vliza brat");
       data = s.readString();
       once = true;
-      // Send characters to Bluefruit
-      Serial.print("[Send] ");
-      Serial.println(data);
 
-      ble.print("AT+BLEUARTTX=");
-      ble.println(data);
+      /*// Send characters to Bluefruit
+        Serial.print("[Send] ");
+        Serial.println(data);
 
-      // check response stastus
-      if (! ble.waitForOK() ) {
+        ble.print("AT+BLEUARTTX=");
+        ble.println(data);
+
+        // check response stastus
+        if (! ble.waitForOK() ) {
         Serial.println(F("Failed to send?"));
-      }
+        }*/
     }
 
 
@@ -152,16 +204,21 @@ void loop(void)
     //------to here for lights
     //-----------------------------------------
     /*//------from here fan state
-    else if (data.startsWith("fs"))
-    {
+      else if (data.startsWith("fs"))
+      {
       //do stuff fan
-    }
-    //-------to here fan state*/
+      }
+      //-------to here fan state*/
     //-----------------------------------------
     //-------from here curtain state
     else if (data.startsWith("cs"))
     {
       //do stuff curtain, servo
+      String curtainsPos = data.substring(3);
+      int degreesCur = curtainsPos.toInt();
+      
+      curtains.write(degreesCur);
+      //Serial.println(curtainsInteger);
     }
     //-------to here curtain state
     //-----------------------------------------
