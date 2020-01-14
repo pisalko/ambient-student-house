@@ -103,7 +103,7 @@ void loop(void)
     ble.readline();
     if (strcmp(ble.buffer, "OK") == 0) {
       // no data
-      //return;
+      return;
     }
     else
     {
@@ -151,12 +151,12 @@ void loop(void)
     }
     //------to here for lights
     //-----------------------------------------
-    //------from here fan state
+    /*//------from here fan state
     else if (data.startsWith("fs"))
     {
       //do stuff fan
     }
-    //-------to here fan state
+    //-------to here fan state*/
     //-----------------------------------------
     //-------from here curtain state
     else if (data.startsWith("cs"))
@@ -196,9 +196,9 @@ void loop(void)
   }
   else if (lightModeStudy)
   {
-    r = 255;
-    g = 0;
-    b = 11;
+    r = 201;
+    g = 226;
+    b = 255;
     analogWrite(RED, r);
     analogWrite(GREEN, g);
     analogWrite(BLUE, b);
