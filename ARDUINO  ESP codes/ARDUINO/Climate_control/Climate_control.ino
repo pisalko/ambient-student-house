@@ -22,13 +22,13 @@ void loop() {
     if (Serial.available()) {
       weatherReport = Serial.readStringUntil('\r');
       int startIndex = 0;
-      int endIndex = weatherReport.indexOf(";");
+      int endIndex = weatherReport.indexOf("$");
       weather = weatherReport.substring(startIndex, endIndex);
-      startIndex = weatherReport.indexOf(";") + 1;
-      endIndex = weatherReport.indexOf(",");
+      startIndex = weatherReport.indexOf("$") + 1;
+      endIndex = weatherReport.indexOf("%");
       temperatureString = weatherReport.substring(startIndex, endIndex);
       temperature = temperatureString.toDouble();
-      startIndex = weatherReport.indexOf(",") + 1;
+      startIndex = weatherReport.indexOf("%") + 1;
       endIndex = weatherReport.indexOf(weatherReport.length());
       humidityString = weatherReport.substring(startIndex, endIndex);
       humidity = humidityString.toDouble();
