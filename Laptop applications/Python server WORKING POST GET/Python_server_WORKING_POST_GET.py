@@ -20,15 +20,16 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 class S(BaseHTTPRequestHandler):
 
     post_data = "" 
-    message = ""
+    message = "" 
+    listFridge = "Empty"
+    
 
    
       
     def _set_headers(self):
         self.send_response(200)
         self.send_header("Content-type", "text/html")
-        self.end_headers()
-    
+        self.end_headers()   
         
     def get_ip():
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -42,12 +43,18 @@ class S(BaseHTTPRequestHandler):
             s.close()
         return IP
 
+    def do_HEAD(self):
+        self.send_response(200, message = "valeee")
+        self.send_header("Content-type", "text/html")
+        self.end_headers()   
+
     def do_GET(self):
         global post_data #"Hi!"
         global message
+        
         self._set_headers()
         #message = "Hello this is server!"
-        print(message) #If VARmessage is the same as last get request, we send "No new orders"String and if message is not the same, we send new order
+        print(message) 
         b = bytearray()
         b.extend(message) #Either a string that says on order yet
         self.wfile.write(b)
@@ -55,12 +62,36 @@ class S(BaseHTTPRequestHandler):
     def do_POST(self):
         global post_data
         global message
+        global listFridge
+        
         content_length = int(self.headers['Content-Length']) # <--- Gets the size of data
         post_data = self.rfile.read(content_length) # <--- Gets the data itself
         #post_data = post_data[2:-1]
         print (post_data)
-        self._set_headers()        
-        message = post_data
+        #self._set_headers()   
+        da = post_data.decode("utf-8")
+        if da.startswith('='):
+            listFridge = da[1:]
+            self._set_headers()
+            print(listFridge)
+
+        elif da == ">":   
+            self.send_response(200, listFridge)
+            self.send_header("Content-type", "text/plain")  
+            self.send_header("Content-length", len(listFridge))              
+            self.end_headers()
+            
+            #self._set_headers()
+            self.wfile.write(listFridge.encode("UTF-8"))
+
+            print (listFridge)
+
+        else:
+            message = post_data
+            self._set_headers()
+
+        
+        
         
 
 def run(server_class=HTTPServer, handler_class=S, addr=S.get_ip(), port=42069):

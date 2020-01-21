@@ -11,7 +11,7 @@ namespace Laptop_application_final
 {
     public partial class Form1 : Form
     {
-        const String IPSERVER = "http://192.168.43.213:42069/";
+        const String IPSERVER = "http://10.28.109.141:42069/";
 
         String textInPort = "";
         String responseFromServer = "";
@@ -115,26 +115,54 @@ namespace Laptop_application_final
             {
                 oldDataFromGET = dataFromGET;
 
-                for (int i = 0; i < dataFromGET.Length; i++)
+                if (dataFromGET.StartsWith("-"))
                 {
-                    if (dataFromGET[i] == ',')
+                    String removedItem = dataFromGET.Substring(1);
+                    lbFridge.Items.Remove(removedItem);
+                    String itemsInFridge = "=";
+                    foreach (String item in lbFridge.Items)
                     {
-                        indexForComma = i;
-                        break;
+                        if (lbFridge.Items.Count == 0)
+                            itemsInFridge += "Empty";
+                        else
+                            itemsInFridge += (item + "{");
                     }
+                    POSTrequest(IPSERVER, itemsInFridge);
                 }
-
-                roomReceived = dataFromGET.Substring(0, indexForComma);
-                ipReceived = dataFromGET.Substring(indexForComma + 1);
-
-                lvAvailableRooms.Items.Add(roomReceived);
-                try
+                else if (dataFromGET.StartsWith("+"))
                 {
-                    RoomsAndIPs.Add(roomReceived, ipReceived);
+                    String addedItem = dataFromGET.Substring(1);
+                    lbFridge.Items.Add(addedItem);
+                    String itemsInFridge = "=";
+                    foreach (String item in lbFridge.Items)
+                    {
+                        itemsInFridge += (item + "{");
+                    }
+                    POSTrequest(IPSERVER, itemsInFridge);
                 }
-                catch(Exception errors)
+                else
                 {
+                    for (int i = 0; i < dataFromGET.Length; i++)
+                    {
+                        if (dataFromGET[i] == ',')
+                        {
+                            indexForComma = i;
+                            break;
+                        }
+                    }
 
+                    roomReceived = dataFromGET.Substring(0, indexForComma);
+                    ipReceived = dataFromGET.Substring(indexForComma + 1);
+
+                    lvAvailableRooms.Items.Add(roomReceived);
+                    try
+                    {
+                        RoomsAndIPs.Add(roomReceived, ipReceived);
+                    }
+                    catch (Exception)
+                    {
+
+                    }
                 }
             }
         }
@@ -151,14 +179,15 @@ namespace Laptop_application_final
         {
             //try
             //{
-                if (textInPort != "")
-                {
-                    textInPort.Trim();
+            if (textInPort != "")
+            {
+                textInPort.Trim();
 
-                    String ipUsed = "";
+                String ipUsed = "";
 
                 //MessageBox.Show(lvAvailableRooms.SelectedItems[0].Text);
-
+                try
+                {
                     if (RoomsAndIPs.ContainsKey(lvAvailableRooms.SelectedItems[0].Text) || lvAvailableRooms.SelectedItems[0].Text == "Master key")
                     {
                         RoomsAndIPs.TryGetValue(lvAvailableRooms.SelectedItems[0].Text, out ipUsed);
@@ -169,14 +198,19 @@ namespace Laptop_application_final
                         MessageBox.Show("Please select a Room !");
                         return;
                     }
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show("Please select first !");
+                }
 
-                    if (lvAvailableRooms.SelectedItems[0].Text == "Master key" && RoomsAndIPs.Count != 0)
+                if (lvAvailableRooms.SelectedItems[0].Text == "Master key" && RoomsAndIPs.Count != 0)
+                {
+                    //SEND TO ALL ESPs        
+                    for (int i = 0; i < RoomsAndIPs.Values.Count; i++)
                     {
-                        //SEND TO ALL ESPs        
-                        for (int i = 0; i < RoomsAndIPs.Values.Count; i++)
-                        {
                         //MessageBox.Show(RoomsAndIPs.Values.ToList()[i].ToString());
-                            POSTrequest("http://" + RoomsAndIPs.Values.ToList()[i].ToString() + "/add", textInPort);
+                        POSTrequest("http://" + RoomsAndIPs.Values.ToList()[i].ToString() + "/add", textInPort);
 
                         bool found = false;
                         foreach (string s in lbRegistered.Items)
@@ -194,48 +228,48 @@ namespace Laptop_application_final
                         }
                         else
                             MessageBox.Show("TAG already assigned to another user !");
-                        
-                        //Thread.Sleep(20);
-                        }
-                        textInPort = "";
-                    }
-                    else if (RoomsAndIPs.Count != 0)
-                    {
-                        POSTrequest("http://" + ipUsed + "/add", textInPort);
 
-                        bool found = false;
-                        foreach (string s in lbRegistered.Items)
+                        //Thread.Sleep(20);
+                    }
+                    textInPort = "";
+                }
+                else if (RoomsAndIPs.Count != 0)
+                {
+                    POSTrequest("http://" + ipUsed + "/add", textInPort);
+
+                    bool found = false;
+                    foreach (string s in lbRegistered.Items)
+                    {
+                        if (s.Contains(textInPort))
                         {
-                            if (s.Contains(textInPort))
-                            { 
-                                found = true;
-                                break;
-                            }
+                            found = true;
+                            break;
                         }
+                    }
                     if (!found)
                     {
                         textAddedToLb = tbName.Text + " " + tbAge.Text + " " + "Room: " + lvAvailableRooms.SelectedItems[0].Text + "  TAG ID: " + textInPort;
-                        lbRegistered.Items.Add(textAddedToLb);                       
+                        lbRegistered.Items.Add(textAddedToLb);
                     }
                     else
                         MessageBox.Show("TAG already assigned to another user !");
-                        textInPort = "";
-                    
-                    }
-                    else
-                    {
-                        MessageBox.Show("There are no rooms in the system yet.");
-                    }
+                    textInPort = "";
+
                 }
                 else
                 {
-                    MessageBox.Show("RFID tag not read properly. Please put the tag on the reader again !");
+                    MessageBox.Show("There are no rooms in the system yet.");
                 }
-           /* }
-            catch (Exception)
+            }
+            else
             {
-                MessageBox.Show("Please fill all fields before attempting to register new user !");
-            }*/
+                MessageBox.Show("RFID tag not read properly. Please put the tag on the reader again !");
+            }
+            /* }
+             catch (Exception)
+             {
+                 MessageBox.Show("Please fill all fields before attempting to register new user !");
+             }*/
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
@@ -251,7 +285,7 @@ namespace Laptop_application_final
 
         private void lvAvailableRooms_SelectedIndexChanged(object sender, EventArgs e)
         {
-            
+
         }
 
         private void btnRemove_Click(object sender, EventArgs e)
@@ -261,24 +295,24 @@ namespace Laptop_application_final
             MessageBox.Show(textAddedToLb);
 
             int add = 2;
-            if (textAddedToLb.Contains("Master Key")) add++;
+            if (textAddedToLb.IndexOf("Master") != -1) add++;
 
-            String room = (add == 3 ? "Master Key" : textAddedToLb.Split(' ')[3]);
-            String tag = (textAddedToLb.Split(' ')[5 + add] + " " + textAddedToLb.Split(' ')[6 + add] + " " + textAddedToLb.Split(' ')[7 + add] + " " + textAddedToLb.Split(' ')[8 + add]);
+                String room = (add == 3 ? "Master Key" : textAddedToLb.Split(' ')[3]);
+                String tag = (textAddedToLb.Split(' ')[5 + add] + " " + textAddedToLb.Split(' ')[6 + add] + " " + textAddedToLb.Split(' ')[7 + add] + " " + textAddedToLb.Split(' ')[8 + add]);
 
-            String roomIP = RoomsAndIPs[room];
-            if (add == 2)
-            {
-                POSTrequest("http://" + roomIP + "/remove", tag);
-            }
-            else
-            {
-                for (int i = 0; i < RoomsAndIPs.Values.Count; i++)
+                if (add == 2)
                 {
-                    //MessageBox.Show(RoomsAndIPs.Values.ToList()[i].ToString());
-                    POSTrequest("http://" + RoomsAndIPs.Values.ToList()[i].ToString() + "/remove", tag);
+                    String roomIP = RoomsAndIPs[room];
+                    POSTrequest("http://" + roomIP + "/remove", tag);
                 }
-            }
+                else
+                {
+                    for (int i = 0; i < RoomsAndIPs.Values.Count; i++)
+                    {
+                        MessageBox.Show("http://" + RoomsAndIPs.Values.ToList()[i].ToString() + "/remove" + tag);
+                        POSTrequest("http://" + RoomsAndIPs.Values.ToList()[i].ToString() + "/remove", tag);
+                    }
+                }
 
             try
             {
@@ -289,5 +323,7 @@ namespace Laptop_application_final
                 MessageBox.Show("Please select a registered user");
             }
         }
+
+
     }
 }

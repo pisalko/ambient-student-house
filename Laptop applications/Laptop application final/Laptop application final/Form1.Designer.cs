@@ -42,60 +42,56 @@
             this.btnRemove = new System.Windows.Forms.Button();
             this.labRegistered = new System.Windows.Forms.Label();
             this.lbRegistered = new System.Windows.Forms.ListBox();
+            this.lbFridgeContents = new System.Windows.Forms.Label();
+            this.lbFridge = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // labUID
             // 
             this.labUID.AutoSize = true;
-            this.labUID.Location = new System.Drawing.Point(16, 31);
-            this.labUID.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.labUID.Location = new System.Drawing.Point(12, 25);
             this.labUID.Name = "labUID";
-            this.labUID.Size = new System.Drawing.Size(46, 17);
+            this.labUID.Size = new System.Drawing.Size(35, 13);
             this.labUID.TabIndex = 0;
             this.labUID.Text = "label1";
             // 
             // lbName
             // 
             this.lbName.AutoSize = true;
-            this.lbName.Location = new System.Drawing.Point(16, 71);
-            this.lbName.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbName.Location = new System.Drawing.Point(12, 58);
             this.lbName.Name = "lbName";
-            this.lbName.Size = new System.Drawing.Size(49, 17);
+            this.lbName.Size = new System.Drawing.Size(38, 13);
             this.lbName.TabIndex = 1;
             this.lbName.Text = "Name:";
             // 
             // lbAge
             // 
             this.lbAge.AutoSize = true;
-            this.lbAge.Location = new System.Drawing.Point(213, 75);
-            this.lbAge.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.lbAge.Location = new System.Drawing.Point(160, 61);
             this.lbAge.Name = "lbAge";
-            this.lbAge.Size = new System.Drawing.Size(37, 17);
+            this.lbAge.Size = new System.Drawing.Size(29, 13);
             this.lbAge.TabIndex = 2;
             this.lbAge.Text = "Age:";
             // 
             // tbName
             // 
-            this.tbName.Location = new System.Drawing.Point(73, 71);
-            this.tbName.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbName.Location = new System.Drawing.Point(55, 58);
             this.tbName.Name = "tbName";
-            this.tbName.Size = new System.Drawing.Size(132, 22);
+            this.tbName.Size = new System.Drawing.Size(100, 20);
             this.tbName.TabIndex = 3;
             // 
             // tbAge
             // 
-            this.tbAge.Location = new System.Drawing.Point(259, 71);
-            this.tbAge.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.tbAge.Location = new System.Drawing.Point(194, 58);
             this.tbAge.Name = "tbAge";
-            this.tbAge.Size = new System.Drawing.Size(132, 22);
+            this.tbAge.Size = new System.Drawing.Size(100, 20);
             this.tbAge.TabIndex = 4;
             // 
             // btnRegister
             // 
-            this.btnRegister.Location = new System.Drawing.Point(19, 298);
-            this.btnRegister.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnRegister.Location = new System.Drawing.Point(14, 242);
             this.btnRegister.Name = "btnRegister";
-            this.btnRegister.Size = new System.Drawing.Size(371, 28);
+            this.btnRegister.Size = new System.Drawing.Size(278, 23);
             this.btnRegister.TabIndex = 10;
             this.btnRegister.Text = "Register new user";
             this.btnRegister.UseVisualStyleBackColor = true;
@@ -103,7 +99,7 @@
             // 
             // serialPort1
             // 
-            this.serialPort1.PortName = "COM4";
+            this.serialPort1.PortName = "COM14";
             this.serialPort1.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.serialPort1_DataReceived);
             // 
             // timer1
@@ -117,10 +113,10 @@
             this.lvAvailableRooms.BackColor = System.Drawing.Color.White;
             this.lvAvailableRooms.GridLines = true;
             this.lvAvailableRooms.HideSelection = false;
-            this.lvAvailableRooms.Location = new System.Drawing.Point(19, 137);
-            this.lvAvailableRooms.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.lvAvailableRooms.Location = new System.Drawing.Point(14, 111);
+            this.lvAvailableRooms.Margin = new System.Windows.Forms.Padding(2);
             this.lvAvailableRooms.Name = "lvAvailableRooms";
-            this.lvAvailableRooms.Size = new System.Drawing.Size(371, 144);
+            this.lvAvailableRooms.Size = new System.Drawing.Size(279, 118);
             this.lvAvailableRooms.TabIndex = 2;
             this.lvAvailableRooms.TileSize = new System.Drawing.Size(35, 45);
             this.lvAvailableRooms.UseCompatibleStateImageBehavior = false;
@@ -128,18 +124,18 @@
             // lbRooms
             // 
             this.lbRooms.AutoSize = true;
-            this.lbRooms.Location = new System.Drawing.Point(16, 118);
+            this.lbRooms.Location = new System.Drawing.Point(12, 96);
+            this.lbRooms.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.lbRooms.Name = "lbRooms";
-            this.lbRooms.Size = new System.Drawing.Size(117, 17);
+            this.lbRooms.Size = new System.Drawing.Size(89, 13);
             this.lbRooms.TabIndex = 30;
             this.lbRooms.Text = "Available Rooms:";
             // 
             // btnRemove
             // 
-            this.btnRemove.Location = new System.Drawing.Point(435, 298);
-            this.btnRemove.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.btnRemove.Location = new System.Drawing.Point(326, 242);
             this.btnRemove.Name = "btnRemove";
-            this.btnRemove.Size = new System.Drawing.Size(371, 28);
+            this.btnRemove.Size = new System.Drawing.Size(278, 23);
             this.btnRemove.TabIndex = 31;
             this.btnRemove.Text = "Remove Tag ";
             this.btnRemove.UseVisualStyleBackColor = true;
@@ -148,28 +144,44 @@
             // labRegistered
             // 
             this.labRegistered.AutoSize = true;
-            this.labRegistered.Location = new System.Drawing.Point(431, 31);
-            this.labRegistered.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.labRegistered.Location = new System.Drawing.Point(323, 25);
             this.labRegistered.Name = "labRegistered";
-            this.labRegistered.Size = new System.Drawing.Size(163, 17);
+            this.labRegistered.Size = new System.Drawing.Size(121, 13);
             this.labRegistered.TabIndex = 32;
             this.labRegistered.Text = "Registered guests && info";
             // 
             // lbRegistered
             // 
             this.lbRegistered.FormattingEnabled = true;
-            this.lbRegistered.ItemHeight = 16;
-            this.lbRegistered.Location = new System.Drawing.Point(435, 71);
-            this.lbRegistered.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.lbRegistered.Location = new System.Drawing.Point(326, 58);
             this.lbRegistered.Name = "lbRegistered";
-            this.lbRegistered.Size = new System.Drawing.Size(369, 212);
+            this.lbRegistered.Size = new System.Drawing.Size(278, 173);
             this.lbRegistered.TabIndex = 33;
+            // 
+            // lbFridgeContents
+            // 
+            this.lbFridgeContents.AutoSize = true;
+            this.lbFridgeContents.Location = new System.Drawing.Point(252, 290);
+            this.lbFridgeContents.Name = "lbFridgeContents";
+            this.lbFridgeContents.Size = new System.Drawing.Size(84, 13);
+            this.lbFridgeContents.TabIndex = 34;
+            this.lbFridgeContents.Text = "Fridge Contents:";
+            // 
+            // lbFridge
+            // 
+            this.lbFridge.FormattingEnabled = true;
+            this.lbFridge.Location = new System.Drawing.Point(15, 315);
+            this.lbFridge.Name = "lbFridge";
+            this.lbFridge.Size = new System.Drawing.Size(592, 147);
+            this.lbFridge.TabIndex = 35;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(825, 340);
+            this.ClientSize = new System.Drawing.Size(618, 481);
+            this.Controls.Add(this.lbFridge);
+            this.Controls.Add(this.lbFridgeContents);
             this.Controls.Add(this.lbRegistered);
             this.Controls.Add(this.labRegistered);
             this.Controls.Add(this.btnRemove);
@@ -181,7 +193,6 @@
             this.Controls.Add(this.lbAge);
             this.Controls.Add(this.lbName);
             this.Controls.Add(this.labUID);
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Name = "Form1";
             this.Text = "Form1";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form1_FormClosed);
@@ -205,6 +216,8 @@
         private System.Windows.Forms.Button btnRemove;
         private System.Windows.Forms.Label labRegistered;
         private System.Windows.Forms.ListBox lbRegistered;
+        private System.Windows.Forms.Label lbFridgeContents;
+        private System.Windows.Forms.ListBox lbFridge;
     }
 }
 
