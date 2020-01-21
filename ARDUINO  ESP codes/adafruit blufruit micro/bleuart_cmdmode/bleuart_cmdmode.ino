@@ -12,7 +12,7 @@ const int RED = 11;
 const int GREEN = A2;
 const int BLUE = A1;
 const int DC_FAN = 5;
-const int SERVO_PIN = 6; //do additional pin;
+const int SERVO_PIN = 10; //do additional pin;
 
 
 int r = 200;
@@ -235,7 +235,7 @@ void loop()
         String curtainsPos = data.substring(2);
         int degreesCur = curtainsPos.toInt();
 
-        customPWM(degreesCur);
+        curtains.write(degreesCur);
         //Serial.println(curtainsInteger);
       }
       //-------to here curtain state
@@ -282,9 +282,9 @@ void loop()
   else if (lightModeDefault)
   {
     //fancy stuff with time
-    r = 0;
-    g = 0;
-    b = 255;
+    r = 255;
+    g = 214;
+    b = 170;
     analogWrite(RED, r);
     analogWrite(GREEN, g);
     analogWrite(BLUE, b);
