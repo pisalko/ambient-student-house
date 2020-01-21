@@ -28,10 +28,10 @@ void loop() {
   }
   switch (mode) {
     case party:
-      if (millis() - lastCheck > 500) {        
+      if (millis() - lastCheck > 500) {
           r = random(0, 255);
           g = random(0, 255);
-          b = random(0, 255);          
+          b = random(0, 255);
         lastCheck = millis();
       }
       break;
@@ -41,7 +41,7 @@ void loop() {
       b = 214;
       //RGB values taken from: http://planetpixelemporium.com/tutorialpages/light.html
       //According to some conflicting articles along with our own experience, warm light is best for meeting rooms.
-      break;      
+      break;
     case study:
       r = 0;
       g = 5;
