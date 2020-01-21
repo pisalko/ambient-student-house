@@ -6,12 +6,14 @@ using System.Text;
 using System.Windows.Forms;
 using System.Linq;
 using System.Threading;
+using System.Drawing;
+using System.Media;
 
 namespace Laptop_application_final
 {
     public partial class Form1 : Form
     {
-        const String IPSERVER = "http://10.28.109.141:42069/";
+        const String IPSERVER = "http://192.168.43.213:42069/";
 
         String textInPort = "";
         String responseFromServer = "";
@@ -36,6 +38,7 @@ namespace Laptop_application_final
             {
                 MessageBox.Show("Arduino not connected to the port");
             }
+            
         }
 
         public string GETrequest(string uri)
@@ -115,7 +118,23 @@ namespace Laptop_application_final
             {
                 oldDataFromGET = dataFromGET;
 
-                if (dataFromGET.StartsWith("-"))
+
+                if (dataFromGET.StartsWith("}A,"))
+                {
+                    foreach (string roomName in RoomsAndIPs.Keys)
+                    {
+                        if (dataFromGET == "}A," + roomName)
+                        {
+                            ListViewItem vale = lvAvailableRooms.FindItemWithText(roomName);
+                            vale.BackColor = Color.Red;
+
+                            SoundPlayer simpleSound = new SoundPlayer();
+                            simpleSound.Stream = Properties.Resources.media_io_audioclip_1579605008_3483;
+                            simpleSound.Play();
+                        }
+                    }
+                }
+                else if (dataFromGET.StartsWith("-"))
                 {
                     String removedItem = dataFromGET.Substring(1);
                     lbFridge.Items.Remove(removedItem);
@@ -297,22 +316,22 @@ namespace Laptop_application_final
             int add = 2;
             if (textAddedToLb.IndexOf("Master") != -1) add++;
 
-                String room = (add == 3 ? "Master Key" : textAddedToLb.Split(' ')[3]);
-                String tag = (textAddedToLb.Split(' ')[5 + add] + " " + textAddedToLb.Split(' ')[6 + add] + " " + textAddedToLb.Split(' ')[7 + add] + " " + textAddedToLb.Split(' ')[8 + add]);
+            String room = (add == 3 ? "Master Key" : textAddedToLb.Split(' ')[3]);
+            String tag = (textAddedToLb.Split(' ')[5 + add] + " " + textAddedToLb.Split(' ')[6 + add] + " " + textAddedToLb.Split(' ')[7 + add] + " " + textAddedToLb.Split(' ')[8 + add]);
 
-                if (add == 2)
+            if (add == 2)
+            {
+                String roomIP = RoomsAndIPs[room];
+                POSTrequest("http://" + roomIP + "/remove", tag);
+            }
+            else
+            {
+                for (int i = 0; i < RoomsAndIPs.Values.Count; i++)
                 {
-                    String roomIP = RoomsAndIPs[room];
-                    POSTrequest("http://" + roomIP + "/remove", tag);
+                    MessageBox.Show("http://" + RoomsAndIPs.Values.ToList()[i].ToString() + "/remove" + tag);
+                    POSTrequest("http://" + RoomsAndIPs.Values.ToList()[i].ToString() + "/remove", tag);
                 }
-                else
-                {
-                    for (int i = 0; i < RoomsAndIPs.Values.Count; i++)
-                    {
-                        MessageBox.Show("http://" + RoomsAndIPs.Values.ToList()[i].ToString() + "/remove" + tag);
-                        POSTrequest("http://" + RoomsAndIPs.Values.ToList()[i].ToString() + "/remove", tag);
-                    }
-                }
+            }
 
             try
             {
@@ -324,6 +343,16 @@ namespace Laptop_application_final
             }
         }
 
+        private void btnAlarmReset_Click(object sender, EventArgs e)
+        {
+            foreach(ListViewItem vale in lvAvailableRooms.Items)
+            {
+                if(vale.BackColor == Color.Red)
+                {
+                    vale.BackColor = default;
+                }
+            }
+        }
 
     }
 }
